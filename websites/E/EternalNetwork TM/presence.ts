@@ -3,16 +3,7 @@ const presence = new Presence({
   }),
   browsingStamp = Math.floor(Date.now() / 1000);
 
-interface LangStrings {
-  buttonViewPage: string;
-  listeningMusic: string;
-  readingPost: string;
-  viewPage: string;
-  viewUser: string;
-  watchingVid: string;
-}
-
-async function getStrings(): Promise<LangStrings> {
+async function getStrings() {
   return presence.getStrings(
     {
       buttonViewPage: "general.buttonViewPage",
@@ -22,15 +13,15 @@ async function getStrings(): Promise<LangStrings> {
       viewUser: "general.viewUser",
       watchingVid: "general.watchingVid"
     },
-    await presence.getSetting("lang")
+    await presence.getSetting("lang").catch(() => "en")
   );
 }
 
-let strings: Promise<LangStrings> = getStrings(),
+let strings = getStrings(),
   oldLang: string = null;
 
 presence.on("UpdateData", async () => {
-  const newLang = await presence.getSetting("lang"),
+  const newLang: string = await presence.getSetting("lang").catch(() => "en"),
     showTimestamps = await presence.getSetting("timestamp"),
     showSubdomain = await presence.getSetting("subdomain"),
     bigicon = await presence.getSetting("bigicon"),
@@ -44,8 +35,8 @@ presence.on("UpdateData", async () => {
       "eternalnetworktm_logo_3"
     ];
 
-  if (!oldLang) oldLang = newLang;
-  else if (oldLang !== newLang) {
+  oldLang ??= newLang;
+  if (oldLang !== newLang) {
     oldLang = newLang;
     strings = getStrings();
   }
